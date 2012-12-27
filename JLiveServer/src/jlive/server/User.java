@@ -5,61 +5,62 @@ import java.net.*;
 
 public class User implements Runnable {
 	// JAVA.net //
-	private Socket SOCK;
+	private Socket socket;
 	
 	// JAVA.io //
 	private PrintWriter outStream;
 	private BufferedReader inStream;
 	
+	// User //
 	private String name;
+	private InetAddress IP;
 		
-	public User(Socket socket, String n) {
+	public User(Socket s, String n) {
 		// Start as NULL //
-		SOCK = socket;
+		socket = s;
 		outStream = null;
 		inStream = null;
 		
+		// Set User //
 		setName(n);
+		IP = null;
 	}
 
 	
 // LOG:ERS ----------------------------------------------- //
 	private void log(String message){
-		System.out.println("Server: " + message);
+		System.out.println(name + ": " + message);
 	}
 
 	private void logError(String message){
-		System.err.println("Server: " + message);
+		System.err.println(name + ": " + message);
 	}
 
+	
+// RUN THREAD ----------------------------------------------- //
 	@Override
 	public void run() {
+		
 		try {
 			outStream = new PrintWriter(
-					new OutputStreamWriter(SOCK.getOutputStream()));
+					new OutputStreamWriter(socket.getOutputStream()));
 			inStream  = new BufferedReader(
-					new InputStreamReader(SOCK.getInputStream()));
-			log("User connected from " + SOCK.getLocalAddress());
-			send("test");
+					new InputStreamReader(socket.getInputStream()));
+			
+			// Set IP Address //
+			IP = socket.getLocalAddress();
+			
+			log("joined the server.");
 			
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-		
-		finally{
-			try {
-				SOCK.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 	}
 
 	
 // SEND ---------------------------------------------- //
 /* Server sends message package to client. */
-	public void send(String message){
+	public synchronized void send(String message){
 		log("Sending...");
 		outStream.println(message);
 		outStream.flush();
@@ -69,10 +70,10 @@ public class User implements Runnable {
 	
 // RECEIVE ---------------------------------------------- //
 /* Server receives message package from client. */	
-	public String receive(){
+	public synchronized String receive(){
 		log("Receiving...");
 
-		String receivedMessage = "test";
+		String receivedMessage = null;
 		try {
 			receivedMessage = inStream.readLine();
 			log("Message received!");
@@ -82,13 +83,32 @@ public class User implements Runnable {
 		
 		return receivedMessage;
 	}
+	
+// CLOSE ---------------------------------------------- //	
+	public synchronized void close(){
+		log(name + " logging out");
+		try{
+			inStream.close();
+			outStream.close();
+			socket.close();
+			log(name + " logged out.");
+		} catch(IOException e){
+			logError("Failed to properly close the connection. " + e.getMessage());
+		}
+	}
 
-
+	
+// GET:ERS ----------------------------------------------- //
 	public String getName() {
 		return name;
 	}
+	
+	public InetAddress getIP() {
+		return IP;
+	}
+	
 
-
+// SET:ERS ----------------------------------------------- //
 	public void setName(String name) {
 		this.name = name;
 	}

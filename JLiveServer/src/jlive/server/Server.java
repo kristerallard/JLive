@@ -3,7 +3,6 @@ package jlive.server;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
-//import java.util.Scanner;
 
 public class Server {
 	// JAVA.net //
@@ -54,20 +53,16 @@ public class Server {
 		
 		/* Add new <User> when a client connecting. */
 		while(true){
-			Socket SOCK = serverSocket.accept();
+			Socket sock = serverSocket.accept();
 			
-//			@SuppressWarnings("resource")
-//			Scanner input = new Scanner(SOCK.getInputStream());
-//			String userName = input.nextLine();
-			user = new User(SOCK, "userName");
-			Thread x = new Thread(user);
-			x.start();
+			user = new User(sock, "userName");
+			Thread addConnection = new Thread(user);
+			addConnection.start();
 			users.add(user);
-			
-			log("Connection to client established.");
-			System.out.println(SOCK.getLocalAddress());
 		}
 	}
+	
+	
 
 
 // SEND ---------------------------------------------- //
@@ -96,10 +91,9 @@ public class Server {
 			inStream.close();
 			outStream.close();
 			serverSocket.close();
+			log("Connection closed.");
 		} catch(IOException e){
 			logError("Failed to properly close the connection. " + e.getMessage());
 		}
-		
-		log("Connection closed.");
 	}
 }

@@ -11,7 +11,7 @@ public class Client {
 	// JAVA.io //
 	private PrintWriter outStream;
 	private BufferedReader inStream;
-
+	
 	
 // CONSTRUCTOR ----------------------------------------------- //
 	public Client() {

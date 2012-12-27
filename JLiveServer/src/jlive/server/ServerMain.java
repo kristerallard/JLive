@@ -3,9 +3,10 @@ package jlive.server;
 import java.io.IOException;
 
 public class ServerMain {
+	public static Server server;
 	public static void main(String[] args) {
 		// Create new Server. //
-		Server server = new Server();
+		server = new Server();
 		
 		// Start the Server //
 		try {
